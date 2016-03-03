@@ -228,16 +228,15 @@ def test_print(in_list):
 
 def try_cherry_pick(command):
     """ Try a cherry-pick for a commit. Use the specified command passed from
-    the fetcher. If the cherry-pick fails, abort the cherry-pick.
+    the fetcher. If the cherry-pick fails, abort it.
 
     returns:
-        Cherry-pick success/fail as boolean.
+        True if cherry-pick was successfull, False otherwise.
     """
-    if not call_bash_muted(command):
+    res = call_bash_muted(command)
+    if not res:
         call_bash_muted(GIT_ABORT_CHERRY_PICK)
-        return True
-    else:
-        return False
+    return res
 
 def form_patch_list(sort=True):
     """ Form a list of patches belonging to all authors. The will optionally
@@ -308,7 +307,7 @@ def print_report(start_list, regular_list, unmerged_list,
     https://android-review.googlesource.com/#/c/<num>/
     ...
 
-    You can try and merge the patches with the following commands:
+    You can try and merge conflicting patches with the following commands:
     git fetch https://android.googlesource.com/platform/art
         refs/changes/65/<patch_no>/<ps_no> && git cherry-pick FETCH_HEAD
     ...
@@ -332,7 +331,8 @@ def print_report(start_list, regular_list, unmerged_list,
     for patch_tuple in unmerged_list:
         print(patch_tuple[1])
     print()
-    print('You may try to merge broken patches with the following commands:')
+    print('You may try to merge conflicting patches with the following',
+          'commands:')
     for patch_tuple in unmerged_list:
         print(patch_tuple[0])
     print()
@@ -346,6 +346,7 @@ def main():
     fetched_tuples = form_patch_list()
     (regular_list, unmerged_list) = try_regular_list(fetched_tuples)
     print_report(fetched_tuples, regular_list, unmerged_list)
+    # For now, check out master branch and leave everything unchanged.
 
 if __name__ == '__main__':
     main()
